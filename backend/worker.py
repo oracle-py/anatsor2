@@ -109,16 +109,32 @@ def save_reading(device_id, payload):
             air_quality,
             fan_on,
             humidifier_on,
-            alarm_active
+            alarm_active,
+            temperature_high,
+            temperature_low,
+            humidity_high,
+            humidity_low,
+            air_quality_bad,
+            camera_live,
+            detection_label,
+            detection_confidence,
+            detection_at
         )
         SELECT
-            %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s
         WHERE EXISTS (
             SELECT 1
             FROM public.devices
             WHERE id = %s
         )
     """
+
+    detection_label = payload.get("detectionLabel") or payload.get("ai_last_detection")
+    if isinstance(detection_label, str):
+        detection_label = detection_label.strip().lower()
+    if detection_label not in ("rat", "snake"):
+        detection_label = None
 
     values = (
         device_id,
@@ -128,6 +144,15 @@ def save_reading(device_id, payload):
         payload.get("fanOn"),
         payload.get("humidifierOn"),
         payload.get("alarmActive"),
+        payload.get("tempHigh", False),
+        payload.get("tempLow", False),
+        payload.get("humHigh", False),
+        payload.get("humLow", False),
+        payload.get("airBad", False),
+        payload.get("cameraLive", False),
+        detection_label,
+        payload.get("detectionConfidence", payload.get("ai_confidence")) if detection_label else None,
+        payload.get("detectionAt") if detection_label else None,
         device_id,
     )
 
