@@ -29,9 +29,13 @@
       "typedRoutes": true
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anatsor.aipms",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.anatsor.aipms",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#F3F1E7",
         "foregroundImage": "./assets/android-icon-foreground.png",
