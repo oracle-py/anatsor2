@@ -150,9 +150,11 @@ def save_reading(device_id, payload):
         payload.get("temperature"),
         payload.get("humidity"),
         payload.get("airQuality"),
-        payload.get("fanOn"),
-        payload.get("humidifierOn"),
-        payload.get("alarmActive"),
+        # Older firmware does not publish these fields yet. Keep ingestion
+        # compatible with it because the database columns are NOT NULL.
+        payload.get("fanOn", False),
+        payload.get("humidifierOn", False),
+        payload.get("alarmActive", False),
         payload.get("tempHigh", False),
         payload.get("tempLow", False),
         payload.get("humHigh", False),
@@ -207,8 +209,9 @@ def save_reading(device_id, payload):
 
         except psycopg2.Error as error:
             logger.error(
-                "[db] Insert failed for %s: %s",
+                "[db] Insert failed for %s (SQLSTATE %s): %s",
                 device_id,
+                error.pgcode or "unknown",
                 error,
             )
             return
