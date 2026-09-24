@@ -8,7 +8,7 @@ Socket.IO detections connect directly to the UNO Q on the farm LAN.
 
 - Node.js 22.13 or newer (required by Expo SDK 57)
 - A Supabase project
-- The shared schema in `../../anatsor website/supabase/schema.sql`
+- The shared schema in `../../web/supabase/schema.sql`
 - The MQTT bridge in `../../backend/worker.py`
 
 ## Setup
