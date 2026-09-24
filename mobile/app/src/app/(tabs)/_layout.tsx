@@ -1,0 +1,5 @@
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../theme';
+const icons: Record<string, keyof typeof Ionicons.glyphMap> = { index: 'home-outline', camera: 'videocam-outline', records: 'add-circle-outline', insights: 'bulb-outline', settings: 'settings-outline' };
+export default function TabsLayout() { return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.amberDeep, tabBarInactiveTintColor: colors.barnSoft, tabBarStyle: { minHeight: 66, paddingTop: 7, paddingBottom: 8, backgroundColor: colors.paper, borderTopColor: colors.line }, tabBarLabelStyle: { fontSize: 11, fontWeight: '700' }, tabBarIcon: ({ color, size }) => <Ionicons name={icons[route.name]} color={color} size={size} /> })}><Tabs.Screen name="index" options={{ title: 'Home' }} /><Tabs.Screen name="camera" options={{ title: 'Camera' }} /><Tabs.Screen name="records" options={{ title: 'Records' }} /><Tabs.Screen name="insights" options={{ title: 'Insights' }} /><Tabs.Screen name="settings" options={{ title: 'Settings' }} /></Tabs>; }

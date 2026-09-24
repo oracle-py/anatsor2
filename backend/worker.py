@@ -46,7 +46,16 @@ MQTT_PASSWORD = os.environ["MQTT_PASSWORD"]
 
 SUPABASE_DB_URL = os.environ["SUPABASE_DB_URL"]
 
-MQTT_TOPIC = "devices/+/sensors"
+MQTT_SENSOR_TOPIC = "devices/+/sensors"
+MQTT_STATUS_TOPIC = "devices/+/status"
+
+ALERT_DEFINITIONS = {
+    "tempHigh": ("temp_high", "critical", "Temperature is above the safe range"),
+    "tempLow": ("temp_low", "warning", "Temperature is below the safe range"),
+    "humHigh": ("humidity_high", "warning", "Humidity is above the safe range"),
+    "humLow": ("humidity_low", "warning", "Humidity is below the safe range"),
+    "airBad": ("air_bad", "critical", "Poor air quality or high ammonia detected"),
+}
 
 
 # --------------------------------------------------
@@ -149,7 +158,9 @@ def save_reading(device_id, payload):
         payload.get("humHigh", False),
         payload.get("humLow", False),
         payload.get("airBad", False),
-        payload.get("cameraLive", False),
+        # Missing means "not reported", not "offline". The device must send
+        # an explicit true/false cameraLive value for a definitive status.
+        payload.get("cameraLive"),
         detection_label,
         payload.get("detectionConfidence", payload.get("ai_confidence")) if detection_label else None,
         payload.get("detectionAt") if detection_label else None,
@@ -165,6 +176,12 @@ def save_reading(device_id, payload):
             with db_conn.cursor() as cursor:
                 cursor.execute(query, values)
                 inserted = cursor.rowcount
+                if inserted == 1:
+                    cursor.execute(
+                        "UPDATE public.devices SET status = 'online', last_seen_at = now() WHERE id = %s",
+                        (device_id,),
+                    )
+                    sync_alerts(cursor, device_id, payload)
 
             if inserted == 1:
                 logger.info(
@@ -202,6 +219,57 @@ def save_reading(device_id, payload):
     )
 
 
+def sync_alerts(cursor, device_id, payload):
+    """Open and resolve alert history from device-owned condition flags."""
+    for payload_key, (alert_type, severity, message) in ALERT_DEFINITIONS.items():
+        if bool(payload.get(payload_key, False)):
+            cursor.execute(
+                """
+                INSERT INTO public.alerts (device_id, type, severity, message)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (device_id, type) WHERE resolved_at IS NULL DO NOTHING
+                """,
+                (device_id, alert_type, severity, message),
+            )
+        else:
+            cursor.execute(
+                """
+                UPDATE public.alerts SET resolved_at = now()
+                WHERE device_id = %s AND type = %s AND resolved_at IS NULL
+                """,
+                (device_id, alert_type),
+            )
+
+
+def save_status(device_id, status):
+    if status not in ("online", "offline"):
+        logger.warning("[mqtt] Invalid status for %s: %s", device_id, status)
+        return
+    try:
+        if db_conn is None or db_conn.closed:
+            connect_database()
+        with db_conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE public.devices SET status = %s, last_seen_at = now() WHERE id = %s",
+                (status, device_id),
+            )
+            if status == "offline":
+                cursor.execute(
+                    """INSERT INTO public.alerts (device_id, type, severity, message)
+                       SELECT %s, 'device_offline', 'warning', 'The AIPMS unit is offline'
+                       WHERE EXISTS (SELECT 1 FROM public.devices WHERE id = %s)
+                       ON CONFLICT (device_id, type) WHERE resolved_at IS NULL DO NOTHING""",
+                    (device_id, device_id),
+                )
+            else:
+                cursor.execute(
+                    "UPDATE public.alerts SET resolved_at = now() WHERE device_id = %s AND type = 'device_offline' AND resolved_at IS NULL",
+                    (device_id,),
+                )
+    except psycopg2.Error as error:
+        logger.error("[db] Status update failed for %s: %s", device_id, error)
+
+
 # --------------------------------------------------
 # MQTT CALLBACKS
 # --------------------------------------------------
@@ -224,15 +292,13 @@ def on_connect(
         )
         return
 
-    result, mid = client.subscribe(
-        MQTT_TOPIC,
-        qos=1,
-    )
+    result, mid = client.subscribe([(MQTT_SENSOR_TOPIC, 1), (MQTT_STATUS_TOPIC, 1)])
 
     if result == mqtt.MQTT_ERR_SUCCESS:
         logger.info(
-            "[mqtt] Subscribed to %s",
-            MQTT_TOPIC,
+            "[mqtt] Subscribed to %s and %s",
+            MQTT_SENSOR_TOPIC,
+            MQTT_STATUS_TOPIC,
         )
     else:
         logger.error(
@@ -245,12 +311,7 @@ def on_message(client, userdata, msg):
     try:
         parts = msg.topic.split("/")
 
-        if (
-            len(parts) != 3
-            or parts[0] != "devices"
-            or parts[2] != "sensors"
-            or not parts[1]
-        ):
+        if len(parts) != 3 or parts[0] != "devices" or not parts[1] or parts[2] not in ("sensors", "status"):
             logger.warning(
                 "[mqtt] Unexpected topic: %s",
                 msg.topic,
@@ -258,6 +319,10 @@ def on_message(client, userdata, msg):
             return
 
         device_id = parts[1]
+
+        if parts[2] == "status":
+            save_status(device_id, msg.payload.decode("utf-8").strip().lower())
+            return
 
         payload = json.loads(
             msg.payload.decode("utf-8")

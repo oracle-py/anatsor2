@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AIPMS — Poultry Monitoring App</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2324352A'/%3E%3Cpath d='M18 38c0-10 7-18 17-18 7 0 13 4 16 10-4-2-8-2-11 0 4 1 7 4 8 8H18Z' fill='%23E3A72E'/%3E%3Ccircle cx='38' cy='25' r='2' fill='%23FCFBF7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sage:      #EEF1E7;
+    --sage-deep: #DEE5D3;
+    --barn:      #24352A;
+    --barn-70:   #4B5A4F;
+    --paper:     #FCFBF7;
+    --amber:     #E3A72E;
+    --amber-deep:#C6871B;
+    --clay:      #B15E3B;
+    --good:      #4C7A57;
+    --warn:      #C6871B;
+    --bad:       #B4472F;
+    --line:      #24352A22;
+    --radius-card: 18px;
+    font-size: 16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--sage);
+    font-family:'DM Sans', sans-serif;
+    color: var(--barn);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 32px 16px 48px;
+    gap: 22px;
+  }
+
+  .rig-title{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size: 1.55rem;
+    text-align:center;
+    letter-spacing:-0.01em;
+  }
+  .rig-sub{
+    text-align:center;
+    color:var(--barn-70);
+    font-size:0.92rem;
+    max-width:340px;
+    margin-top:-14px;
+  }
+
+  /* ---------- phone shell ---------- */
+  .phone{
+    width: 375px;
+    height: 780px;
+    background: var(--barn);
+    border-radius: 46px;
+    padding: 12px;
+    box-shadow: 0 30px 60px -20px rgba(36,53,42,0.45), 0 2px 0 rgba(255,255,255,0.4) inset;
+    position: relative;
+  }
+  .screen{
+    width:100%;
+    height:100%;
+    background: var(--paper);
+    border-radius: 34px;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .notch{
+    position:absolute;
+    top:12px; left:50%; transform:translateX(-50%);
+    width:120px; height:26px;
+    background:var(--barn);
+    border-radius: 0 0 16px 16px;
+    z-index: 20;
+  }
+  .statusbar{
+    height:46px;
+    flex:0 0 auto;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    padding: 0 22px 6px;
+    font-size:0.78rem;
+    font-weight:700;
+    color:var(--barn);
+  }
+
+  .view{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding: 4px 20px 18px;
+    display:none;
+  }
+  .view.active{display:block;}
+  .view::-webkit-scrollbar{display:none;}
+
+  /* ---------- auth ---------- */
+  #view-auth.active{
+    display:flex;
+    flex-direction:column;
+    padding: 8px 26px 26px;
+  }
+  .auth-mark{
+    width:52px; height:52px;
+    border-radius:16px;
+    background:var(--barn);
+    display:flex; align-items:center; justify-content:center;
+    margin: 18px 0 18px;
+  }
+  .auth-mark svg{width:26px;height:26px;color:var(--amber);}
+  .auth-title{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size:1.55rem;
+    letter-spacing:-0.01em;
+    line-height:1.15;
+  }
+  .auth-sub{
+    font-size:0.82rem;
+    color:var(--barn-70);
+    margin-top:6px;
+    line-height:1.45;
+  }
+  .auth-toggle{
+    display:flex;
+    background:var(--sage);
+    border-radius:12px;
+    padding:4px;
+    margin: 22px 0 20px;
+  }
+  .auth-toggle button{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding:9px 0;
+    border-radius:9px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+    font-size:0.8rem;
+    color:var(--barn-70);
+    cursor:pointer;
+  }
+  .auth-toggle button.active{
+    background:var(--paper);
+    color:var(--barn);
+    box-shadow: 0 1px 3px rgba(36,53,42,0.12);
+  }
+  .field{ margin-bottom:13px; }
+  .field label{
+    display:block;
+    font-size:0.72rem;
+    font-weight:700;
+    color:var(--barn-70);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    border-radius:12px;
+    padding:12px 13px;
+    font-family:'DM Sans',sans-serif;
+    font-size:0.86rem;
+    color:var(--barn);
+  }
+  .field input::placeholder{ color:#24352A55; }
+  .field input:focus{
+    outline:none;
+    border-color:var(--amber-deep);
+  }
+  .field-hint{
+    font-size:0.68rem;
+    color:var(--barn-70);
+    margin-top:5px;
+    line-height:1.4;
+  }
+  .auth-primary-btn{
+    width:100%;
+    background:var(--amber);
+    color:#3a2705;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+    font-size:0.92rem;
+    margin-top:8px;
+    cursor:pointer;
+  }
+  .auth-primary-btn:active{background:var(--amber-deep);}
+  .auth-form{ display:none; }
+  .auth-form.active{ display:block; }
+  .auth-footnote{
+    text-align:center;
+    font-size:0.72rem;
+    color:var(--barn-70);
+    margin-top:16px;
+  }
+  .auth-footnote b{ color:var(--barn); cursor:pointer; }
+
+  /* ---------- shared bits ---------- */
+  .app-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin: 6px 0 18px;
+  }
+  .greet-label{font-size:0.78rem; color:var(--barn-70); font-weight:600;}
+  .greet-name{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-size:1.5rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    line-height:1.1;
+    margin-top:2px;
+  }
+  .date-pill{
+    background: var(--sage);
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-size:0.72rem;
+    font-weight:700;
+    color: var(--barn-70);
+    white-space:nowrap;
+    margin-top:2px;
+  }
+
+  .section-label{
+    font-size:0.72rem;
+    font-weight:700;
+    color:var(--barn-70);
+    margin: 22px 0 10px;
+  }
+  .section-label:first-of-type{margin-top:0;}
+
+  .card{
+    background:var(--sage);
+    border-radius: var(--radius-card);
+    padding:16px;
+  }
+
+  /* status banner */
+  .banner{
+    border-radius: 16px;
+    padding: 13px 15px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    font-size:0.85rem;
+    font-weight:600;
+    line-height:1.35;
+  }
+  .banner.warn{ background:#FBEED1; color:#7A5410; }
+  .banner.good{ background:#DFEBE1; color:#2E4A37; }
+  .banner .dot{
+    width:9px;height:9px;border-radius:50%;flex:0 0 auto;
+  }
+  .banner.warn .dot{background:var(--warn);}
+  .banner.good .dot{background:var(--good);}
+
+  /* gauges */
+  .gauge-row{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .gauge-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:16px;
+    padding:13px 15px;
+  }
+  .gauge-icon{
+    width:42px; height:42px;
+    border-radius:12px;
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .gauge-icon svg{width:21px;height:21px;}
+  .gauge-icon.good{background:#DFEBE1; color:var(--good);}
+  .gauge-icon.warn{background:#FBEED1; color:var(--warn);}
+  .gauge-icon.bad{background:#F6DCD5; color:var(--bad);}
+  .gauge-body{ flex:1 1 auto; min-width:0; }
+  .gauge-top{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:3px;
+  }
+  .gauge-name{ font-size:0.78rem; font-weight:700; color:var(--barn-70); }
+  .gauge-status-text{ font-size:0.7rem; font-weight:700; }
+  .gauge-status-text.good{ color:var(--good); }
+  .gauge-status-text.warn{ color:var(--warn); }
+  .gauge-status-text.bad{ color:var(--bad); }
+  .gauge-value-row{ display:flex; align-items:baseline; gap:4px; margin-bottom:8px; }
+  .gauge-value{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size:1.35rem;
+    line-height:1;
+  }
+  .gauge-unit{ font-size:0.75rem; color:var(--barn-70); font-weight:600; }
+  .gauge-bar-track{
+    height:6px;
+    border-radius:999px;
+    background:var(--sage-deep);
+    overflow:hidden;
+  }
+  .gauge-bar-fill{ height:100%; border-radius:999px; }
+  .gauge-bar-fill.good{ background:var(--good); }
+  .gauge-bar-fill.warn{ background:var(--warn); }
+  .gauge-bar-fill.bad{ background:var(--bad); }
+
+  /* summary card */
+  .summary-card{
+    background: var(--barn);
+    color: var(--paper);
+    border-radius: var(--radius-card);
+    padding:17px;
+    position:relative;
+    overflow:hidden;
+  }
+  .summary-card::before{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:120px; height:120px; border-radius:50%;
+    background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+    opacity:0.35;
+  }
+  .summary-tag{
+    font-size:0.68rem; font-weight:700; letter-spacing:0.02em;
+    color: var(--amber);
+    margin-bottom:6px;
+  }
+  .summary-text{font-size:0.86rem; line-height:1.5; position:relative;}
+
+  /* records screen */
+  .stepper-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:16px;
+    padding:14px 14px;
+    margin-bottom:10px;
+  }
+  .stepper-info .label{font-weight:700; font-size:0.9rem;}
+  .stepper-info .hint{font-size:0.72rem; color:var(--barn-70); margin-top:2px;}
+  .stepper{
+    display:flex; align-items:center; gap:10px;
+  }
+  .stepper button{
+    width:30px;height:30px;border-radius:50%;
+    border:none; background:var(--sage-deep);
+    color:var(--barn); font-size:1.1rem; font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .stepper button:active{background:var(--amber); color:#fff;}
+  .stepper .num{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700; font-size:1.15rem;
+    min-width:26px; text-align:center;
+  }
+  .yesterday-strip{
+    display:flex; justify-content:space-between;
+    background:var(--sage);
+    border-radius:14px; padding:12px 16px;
+    font-size:0.76rem; color:var(--barn-70); font-weight:600;
+    margin: 4px 0 20px;
+  }
+  .yesterday-strip b{color:var(--barn); font-weight:700;}
+  .save-btn{
+    width:100%;
+    background:var(--amber);
+    color:#3a2705;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+    font-size:0.92rem;
+    margin-top:6px;
+    cursor:pointer;
+  }
+  .save-btn:active{background:var(--amber-deep);}
+
+  /* history screen */
+  .history-item{
+    display:flex; align-items:center; gap:12px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .history-item:last-child{border-bottom:none;}
+  .history-date{
+    width:52px; text-align:center; flex:0 0 auto;
+  }
+  .history-date .dow{font-size:0.62rem; color:var(--barn-70); font-weight:700;}
+  .history-date .dnum{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700; font-size:1.2rem;
+  }
+  .history-stats{
+    flex:1 1 auto;
+    display:flex; gap:14px;
+    font-size:0.74rem;
+    color: var(--barn-70);
+  }
+  .history-stats b{color:var(--barn); font-weight:700; display:block; font-size:0.9rem;}
+  .history-note{
+    font-size:0.65rem; font-weight:700;
+    padding:3px 8px; border-radius:999px;
+    flex:0 0 auto;
+  }
+  .history-note.good{background:#DFEBE1;color:var(--good);}
+  .history-note.warn{background:#FBEED1;color:var(--warn);}
+
+  /* insights screen */
+  .alert-item{
+    display:flex; gap:11px; align-items:flex-start;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-left:4px solid var(--warn);
+    border-radius:14px;
+    padding:12px 13px;
+    margin-bottom:10px;
+    font-size:0.8rem;
+    line-height:1.45;
+  }
+  .alert-item.bad{border-left-color:var(--bad);}
+  .alert-item.good{border-left-color:var(--good);}
+  .alert-item .ico{font-size:1.05rem; flex:0 0 auto; margin-top:1px;}
+  .alert-item .t{font-weight:700; margin-bottom:2px; display:block;}
+  .alert-item .time{color:var(--barn-70); font-size:0.68rem; font-weight:600;}
+
+  .insight-card{
+    background:var(--sage);
+    border-radius:16px;
+    padding:15px;
+    margin-bottom:12px;
+  }
+  .insight-card .k{
+    font-size:0.68rem; font-weight:700; color:var(--clay); margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:0.02em;
+  }
+  .insight-card p{margin:0; font-size:0.83rem; line-height:1.5;}
+
+  /* tab bar */
+  .tabbar{
+    flex:0 0 62px;
+    display:flex;
+    border-top:1px solid var(--line);
+    background: var(--paper);
+  }
+  .tab{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px;
+    font-size:0.62rem;
+    font-weight:700;
+    color: var(--barn-70);
+    cursor:pointer;
+    background:none; border:none;
+    font-family:'DM Sans',sans-serif;
+  }
+  .tab .tico{
+    width:20px; height:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tab.active{color:var(--barn);}
+  .tab.active .tico{color:var(--amber-deep);}
+  .tab svg{width:19px;height:19px;}
+
+  .mode-row{display:flex;gap:8px;margin:0 0 14px;align-items:center;flex-wrap:wrap;}
+  .mode-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;background:var(--sage);font-size:.72rem;font-weight:700;color:var(--barn-70);border:1px solid var(--line);}
+  .mode-pill .live-dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px #4c7a571c;}
+  .mode-pill.local .live-dot{background:var(--amber-deep);}
+  .automation-card,.local-card,.settings-card{background:white;border:1px solid var(--line);border-radius:var(--radius-card);padding:15px;margin-bottom:12px;}
+  .automation-head,.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .automation-head{margin-bottom:12px;}
+  .automation-title{font-weight:800;font-size:.9rem;}
+  .auto-badge{font-size:.66rem;font-weight:800;letter-spacing:.04em;background:var(--sage);padding:5px 8px;border-radius:999px;color:var(--good);}
+  .equipment-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .equipment{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:11px;}
+  .equipment .name{font-size:.7rem;color:var(--barn-70);font-weight:700;}
+  .equipment .state{font-size:.9rem;font-weight:800;margin-top:4px;}
+  .equipment .reason{font-size:.66rem;color:var(--barn-70);line-height:1.35;margin-top:3px;}
+  .inline-link{border:0;background:none;color:var(--amber-deep);font:700 .72rem 'DM Sans';padding:0;cursor:pointer;}
+  .form-message{display:none;border-radius:10px;padding:9px 11px;margin:8px 0;font-size:.72rem;font-weight:700;line-height:1.35;}
+  .form-message.show{display:block;}.form-message.error{background:#b4472f14;color:var(--bad);}.form-message.success{background:#4c7a5714;color:var(--good);}
+  .setup-icon{width:66px;height:66px;border-radius:22px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:24px 0 18px;}
+  .setup-progress{height:7px;background:var(--sage);border-radius:999px;overflow:hidden;margin:22px 0 10px;}.setup-progress span{display:block;height:100%;width:0;background:var(--amber);transition:width 1.2s ease;}
+  .camera-stage{height:205px;border-radius:18px;background:linear-gradient(145deg,#1b2920,#314437);color:white;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;overflow:hidden;margin-bottom:12px;}
+  .camera-stage.connected{background:linear-gradient(145deg,#27372c,#101712);}
+  .camera-stage .cam-copy{max-width:220px;font-size:.78rem;line-height:1.45;color:#ffffffc9;}.camera-stage .cam-icon{font-size:2rem;display:block;margin-bottom:9px;}
+  .camera-overlay{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;align-items:center;font-size:.68rem;font-weight:700;}
+  .detect-box{border:1px solid #e3a72e66;background:#e3a72e12;padding:9px 10px;border-radius:10px;color:#f3c664;}
+  .local-form{display:flex;gap:8px;margin-top:10px;}.local-form input{min-width:0;flex:1;border:1.5px solid var(--line);border-radius:11px;padding:10px;font:inherit;font-size:.78rem;}.small-btn{border:0;border-radius:11px;background:var(--barn);color:white;padding:10px 12px;font:700 .75rem 'DM Sans';cursor:pointer;}
+  .record-tabs{display:flex;background:var(--sage);border-radius:12px;padding:4px;margin-bottom:14px;}.record-tabs button{flex:1;border:0;background:none;border-radius:9px;padding:8px;font:700 .72rem 'DM Sans';color:var(--barn-70);cursor:pointer;}.record-tabs button.active{background:white;color:var(--barn);box-shadow:0 1px 3px #24352a1f;}
+  .record-panel{display:none}.record-panel.active{display:block}.empty-state{text-align:center;padding:28px 12px;color:var(--barn-70);font-size:.78rem;line-height:1.5;}
+  .toast{position:absolute;left:20px;right:20px;bottom:76px;background:var(--barn);color:white;padding:12px 14px;border-radius:13px;font-size:.75rem;font-weight:700;box-shadow:0 10px 30px #24352a40;transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s;z-index:40}.toast.show{opacity:1;transform:translateY(0)}
+  .setting-row{padding:12px 0;border-bottom:1px solid var(--line);}.setting-row:last-child{border:0}.setting-copy .title{font-size:.8rem;font-weight:800}.setting-copy .sub{font-size:.68rem;color:var(--barn-70);margin-top:2px}.value-chip{font-size:.7rem;font-weight:800;background:var(--sage);border-radius:9px;padding:6px 8px;}
+  .switch{width:38px;height:22px;border:0;border-radius:999px;background:var(--good);position:relative;cursor:pointer}.switch:after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:white;top:3px;right:3px;transition:.2s}.switch.off{background:#24352a33}.switch.off:after{right:19px}
+  .danger-btn{width:100%;border:1px solid #b4472f44;background:#b4472f0e;color:var(--bad);border-radius:12px;padding:11px;font:700 .78rem 'DM Sans';cursor:pointer;margin-top:5px;}
+  .tabbar{overflow-x:auto}.tab{min-width:58px}
+
+  @media (max-width:420px){
+    .phone{width:100%; max-width:375px; height:82vh; min-height:640px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="rig-title">AIPMS</div>
+<div class="rig-sub">Anatsor Integrated Poultry Management System — live farm monitoring, daily records, and AI insights.</div>
+
+<div class="phone">
+  <div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span>●●●●&nbsp; 4G &nbsp;100%</span>
+    </div>
+
+    <!-- AUTH -->
+    <div class="view active" id="view-auth">
+      <div class="auth-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
+      </div>
+      <div class="auth-title" id="auth-heading">Welcome back</div>
+      <div class="auth-sub" id="auth-subheading">Log in to see your farm's live readings and records.</div>
+
+      <div class="auth-toggle">
+        <button class="active" id="toggle-login" onclick="setAuthMode('login')">Log in</button>
+        <button id="toggle-signup" onclick="setAuthMode('signup')">Sign up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="auth-form active" id="form-login">
+        <div class="field">
+          <label>Email</label>
+          <input id="login-email" type="email" placeholder="you@farm.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="login-password" type="password" placeholder="••••••••">
+        </div>
+        <div style="text-align:right;margin-top:-5px;margin-bottom:6px"><button class="inline-link" onclick="forgotPassword()">Forgot password?</button></div>
+        <div class="form-message" id="login-message"></div>
+        <button class="auth-primary-btn" onclick="submitLogin()">Log in</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div class="auth-form" id="form-signup">
+        <div class="field">
+          <label>Full name</label>
+          <input id="signup-name" type="text" placeholder="Your name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="signup-email" type="email" placeholder="you@farm.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="signup-password" type="password" placeholder="At least 8 characters">
+        </div>
+        <div class="field">
+          <label>Device ID</label>
+          <input id="signup-device" type="text" placeholder="e.g. AIPMS1234" maxlength="20">
+          <div class="field-hint">Found on a sticker on your monitoring unit — this links the app to your farm's sensors.</div>
+        </div>
+        <div class="form-message" id="signup-message"></div>
+        <button class="auth-primary-btn" onclick="submitSignup()">Create account</button>
+      </div>
+
+      <div class="auth-footnote" id="auth-footnote">
+        New here? <b onclick="setAuthMode('signup')">Create an account</b>
+      </div>
+    </div>
+
+    <!-- DEVICE SETUP -->
+    <div class="view" id="view-setup">
+      <div class="setup-icon">📡</div>
+      <div class="auth-title" id="setup-title">Connecting your AIPMS unit</div>
+      <div class="auth-sub" id="setup-copy">Checking the device ID and preparing your farm dashboard.</div>
+      <div class="setup-progress"><span id="setup-progress"></span></div>
+      <div class="form-message success" id="setup-success">Device registered. Your dashboard is ready.</div>
+      <button class="auth-primary-btn" id="setup-continue" style="display:none" onclick="goToApp()">Open dashboard</button>
+    </div>
+
+    <!-- HOME -->
+    <div class="view" id="view-home">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">Good morning</div>
+          <div class="greet-name">Farm&nbsp;3</div>
+        </div>
+        <div class="date-pill">Sun, Sep 21</div>
+      </div>
+
+      <div class="mode-row">
+        <span class="mode-pill"><span class="live-dot"></span> Cloud connected</span>
+        <span class="mode-pill">AIPMS1234</span>
+      </div>
+
+      <div class="banner warn">
+        <span class="dot"></span>
+        Humidity has been above target for 4 hours — check ventilation.
+      </div>
+
+      <div class="section-label" id="reading-update">Live readings · updated just now</div>
+      <div class="gauge-row">
+        <div class="gauge-card">
+          <div class="gauge-icon good">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>
+          </div>
+          <div class="gauge-body">
+            <div class="gauge-top">
+              <span class="gauge-name">Temperature</span>
+              <span class="gauge-status-text good">Normal</span>
+            </div>
+            <div class="gauge-value-row">
+              <span class="gauge-value" id="temperature-reading">27.0</span><span class="gauge-unit">°C</span>
+            </div>
+            <div class="gauge-bar-track"><div class="gauge-bar-fill good" style="width:58%"></div></div>
+          </div>
+        </div>
+
+        <div class="gauge-card">
+          <div class="gauge-icon warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s7 8.2 7 12.5a7 7 0 11-14 0c0-4.3 7-12.5 7-12.5z"/></svg>
+          </div>
+          <div class="gauge-body">
+            <div class="gauge-top">
+              <span class="gauge-name">Humidity</span>
+              <span class="gauge-status-text warn">High</span>
+            </div>
+            <div class="gauge-value-row">
+              <span class="gauge-value" id="humidity-reading">78</span><span class="gauge-unit">%</span>
+            </div>
+            <div class="gauge-bar-track"><div class="gauge-bar-fill warn" style="width:82%"></div></div>
+          </div>
+        </div>
+
+        <div class="gauge-card">
+          <div class="gauge-icon good">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a3 3 0 100-3"/><path d="M3 16h15a3 3 0 110 3"/><path d="M3 12h8a2.5 2.5 0 100-5"/></svg>
+          </div>
+          <div class="gauge-body">
+            <div class="gauge-top">
+              <span class="gauge-name">Air quality</span>
+              <span class="gauge-status-text good">Good</span>
+            </div>
+            <div class="gauge-value-row">
+              <span class="gauge-value">Good</span>
+            </div>
+            <div class="gauge-bar-track"><div class="gauge-bar-fill good" style="width:22%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Automatic system control</div>
+      <div class="automation-card">
+        <div class="automation-head">
+          <div class="automation-title">Environment automation</div>
+          <span class="auto-badge">AUTOMATIC</span>
+        </div>
+        <div class="equipment-row">
+          <div class="equipment">
+            <div class="name">Ventilation fan</div>
+            <div class="state">Running</div>
+            <div class="reason">Humidity is above the target range.</div>
+          </div>
+          <div class="equipment">
+            <div class="name">Humidifier</div>
+            <div class="state">Off</div>
+            <div class="reason">Humidity does not require misting.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Today, from AIPMS AI</div>
+      <div class="summary-card">
+        <div class="summary-tag">DAILY READ</div>
+        <div class="summary-text">
+          Conditions are steady except for humidity, which has stayed high since last night.
+          Egg count is tracking normally. Consider running extra ventilation this afternoon.
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCAL CAMERA -->
+    <div class="view" id="view-camera">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">Local network mode</div>
+          <div class="greet-name">Camera</div>
+        </div>
+        <div class="date-pill" id="camera-status">Not connected</div>
+      </div>
+
+      <div class="mode-row">
+        <span class="mode-pill local"><span class="live-dot"></span> Farm Wi-Fi required</span>
+      </div>
+
+      <div class="camera-stage" id="camera-stage">
+        <div class="cam-copy" id="camera-copy"><span class="cam-icon">📷</span>Connect to the same Wi-Fi as your AIPMS unit, then search for its local camera.</div>
+        <div class="camera-overlay" id="camera-overlay" style="display:none">
+          <span class="detect-box">Chicken detected · 91%</span><span>LIVE</span>
+        </div>
+      </div>
+
+      <div class="local-card">
+        <div class="automation-title">Find your local unit</div>
+        <div class="auth-sub">AIPMS will try the device address below. The real feed will be enabled when the UNO Q is reachable.</div>
+        <div class="local-form">
+          <input id="local-address" value="aipms1234.local" aria-label="Local device address">
+          <button class="small-btn" onclick="connectLocal()">Connect</button>
+        </div>
+      </div>
+
+      <div class="section-label">Latest AI detection</div>
+      <div class="insight-card">
+        <div class="k">Waiting for local camera</div>
+        <p id="detection-copy">Detections made by the UNO Q will appear here while you are connected to the farm network.</p>
+      </div>
+    </div>
+
+    <!-- RECORDS -->
+    <div class="view" id="view-records">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">Daily record</div>
+          <div class="greet-name">Today's log</div>
+        </div>
+        <div class="date-pill">Sun, Sep 21</div>
+      </div>
+
+      <div class="yesterday-strip">
+        <span>Yesterday</span>
+        <span><b>3</b> chicks · <b>0</b> bred · <b>142</b> eggs</span>
+      </div>
+
+      <div class="record-tabs">
+        <button class="active">New entry</button>
+        <button onclick="openHistory()">Saved history</button>
+      </div>
+
+      <div class="section-label">Enter today's numbers</div>
+
+      <div class="stepper-row">
+        <div class="stepper-info">
+          <div class="label">Chicks hatched</div>
+          <div class="hint">Added or hatched today</div>
+        </div>
+        <div class="stepper">
+          <button>−</button>
+          <span class="num" id="record-chicks">0</span>
+          <button>+</button>
+        </div>
+      </div>
+
+      <div class="stepper-row">
+        <div class="stepper-info">
+          <div class="label">Birds bred</div>
+          <div class="hint">New breeding pairs / batches</div>
+        </div>
+        <div class="stepper">
+          <button>−</button>
+          <span class="num" id="record-bred">0</span>
+          <button>+</button>
+        </div>
+      </div>
+
+      <div class="stepper-row">
+        <div class="stepper-info">
+          <div class="label">Eggs laid</div>
+          <div class="hint">Total collected today</div>
+        </div>
+        <div class="stepper">
+          <button>−</button>
+          <span class="num" id="record-eggs">138</span>
+          <button>+</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>Farm note (optional)</label>
+        <input id="record-note" type="text" placeholder="Anything unusual today?">
+      </div>
+      <button class="save-btn" onclick="saveRecord()">Save today's record</button>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="view" id="view-history">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">Records</div>
+          <div class="greet-name">History</div>
+        </div>
+      </div>
+
+      <div class="record-tabs">
+        <button onclick="openRecords()">New entry</button>
+        <button class="active">Saved history</button>
+      </div>
+
+      <div class="card" id="history-list" style="padding:6px 10px;">
+        <div class="history-item">
+          <div class="history-date"><div class="dow">SUN</div><div class="dnum">21</div></div>
+          <div class="history-stats">
+            <div><b>0</b>chicks</div>
+            <div><b>0</b>bred</div>
+            <div><b>138</b>eggs</div>
+          </div>
+          <div class="history-note warn">Humid</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date"><div class="dow">SAT</div><div class="dnum">20</div></div>
+          <div class="history-stats">
+            <div><b>3</b>chicks</div>
+            <div><b>0</b>bred</div>
+            <div><b>142</b>eggs</div>
+          </div>
+          <div class="history-note good">Normal</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date"><div class="dow">FRI</div><div class="dnum">19</div></div>
+          <div class="history-stats">
+            <div><b>0</b>chicks</div>
+            <div><b>1</b>bred</div>
+            <div><b>146</b>eggs</div>
+          </div>
+          <div class="history-note good">Normal</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date"><div class="dow">THU</div><div class="dnum">18</div></div>
+          <div class="history-stats">
+            <div><b>0</b>chicks</div>
+            <div><b>0</b>bred</div>
+            <div><b>131</b>eggs</div>
+          </div>
+          <div class="history-note warn">Humid</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date"><div class="dow">WED</div><div class="dnum">17</div></div>
+          <div class="history-stats">
+            <div><b>0</b>chicks</div>
+            <div><b>0</b>bred</div>
+            <div><b>140</b>eggs</div>
+          </div>
+          <div class="history-note good">Normal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="view" id="view-insights">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">AIPMS AI</div>
+          <div class="greet-name">Insights</div>
+        </div>
+      </div>
+
+      <div class="section-label">Active alerts</div>
+      <div class="alert-item warn">
+        <span class="ico">⚠️</span>
+        <div>
+          <span class="t">Humidity above target</span>
+          78% for 4 hours — optimal range is 55–70%.
+          <div class="time">Started 6:10 AM</div>
+        </div>
+      </div>
+      <div class="alert-item good">
+        <span class="ico">✓</span>
+        <div>
+          <span class="t">Temperature stable</span>
+          Held steady in the normal range all night.
+          <div class="time">Last 12 hours</div>
+        </div>
+      </div>
+
+      <div class="section-label">Pattern from your records</div>
+      <div class="insight-card">
+        <div class="k">Correlation</div>
+        <p>Egg count has dropped by around 6% on the two days that followed a humidity spike this month — worth watching if humidity stays high tonight.</p>
+      </div>
+
+      <div class="section-label">Weekly summary</div>
+      <div class="insight-card">
+        <div class="k">Sep 15 – Sep 21</div>
+        <p>Temperature was stable all week. Humidity spiked twice, both in early morning. Egg output is flat week-over-week at around 140/day. No mortality logged.</p>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="app-header">
+        <div>
+          <div class="greet-label">Account and device</div>
+          <div class="greet-name">Settings</div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="setting-row"><div class="setting-copy"><div class="title">Farmer</div><div class="sub" id="settings-email">farmer@example.com</div></div><span class="value-chip" id="settings-name">Farm owner</span></div>
+        <div class="setting-row"><div class="setting-copy"><div class="title">Registered unit</div><div class="sub">Anatsor Integrated Poultry Management System</div></div><span class="value-chip" id="settings-device">AIPMS1234</span></div>
+        <div class="setting-row"><div class="setting-copy"><div class="title">Control mode</div><div class="sub">Managed automatically by the UNO Q</div></div><span class="value-chip">AUTOMATIC</span></div>
+      </div>
+
+      <div class="section-label">Notifications</div>
+      <div class="settings-card">
+        <div class="setting-row"><div class="setting-copy"><div class="title">Critical alerts</div><div class="sub">Temperature, humidity and air quality</div></div><button class="switch" aria-label="Toggle critical alerts" onclick="toggleSwitch(this)"></button></div>
+        <div class="setting-row"><div class="setting-copy"><div class="title">Daily summary</div><div class="sub">One farm report every evening</div></div><button class="switch" aria-label="Toggle daily summary" onclick="toggleSwitch(this)"></button></div>
+      </div>
+
+      <div class="section-label">Local connection</div>
+      <div class="settings-card">
+        <div class="setting-row"><div class="setting-copy"><div class="title">Camera address</div><div class="sub">Used only on the farm's Wi-Fi</div></div><span class="value-chip">aipms1234.local</span></div>
+      </div>
+      <button class="danger-btn" onclick="logout()">Log out of AIPMS</button>
+    </div>
+
+    <div class="tabbar" id="tabbar" style="display:none;">
+      <button class="tab active" data-view="view-home" onclick="showView(this)">
+        <span class="tico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg></span>
+        Home
+      </button>
+      <button class="tab" data-view="view-camera" onclick="showView(this)">
+        <span class="tico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.5-3v10L15 14z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg></span>
+        Camera
+      </button>
+      <button class="tab" data-view="view-records" onclick="showView(this)">
+        <span class="tico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        Records
+      </button>
+      <button class="tab" data-view="view-insights" onclick="showView(this)">
+        <span class="tico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg></span>
+        Insights
+      </button>
+      <button class="tab" data-view="view-settings" onclick="showView(this)">
+        <span class="tico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 00-1.88-.34 1.7 1.7 0 00-1.03 1.56V21h-4v-.09A1.7 1.7 0 009 19.35a1.7 1.7 0 00-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 004.63 15 1.7 1.7 0 003.07 14H3v-4h.09A1.7 1.7 0 004.65 9a1.7 1.7 0 00-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 009 4.63 1.7 1.7 0 0010 3.07V3h4v.09A1.7 1.7 0 0015 4.65a1.7 1.7 0 001.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0019.37 9 1.7 1.7 0 0020.93 10H21v4h-.09A1.7 1.7 0 0019.4 15z"/></svg></span>
+        Settings
+      </button>
+    </div>
+    <div class="toast" id="toast">Saved</div>
+  </div>
+</div>
+
+<script>
+  const appState = {
+    user: JSON.parse(localStorage.getItem('aipms-user') || 'null'),
+    records: JSON.parse(localStorage.getItem('aipms-records') || '[]'),
+    sensorTimer: null
+  };
+
+  function activateView(id){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target = document.getElementById(id);
+    if(target) target.classList.add('active');
+  }
+
+  function showView(btn){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    activateView(btn.dataset.view);
+    if(btn.dataset.view === 'view-history') renderHistory();
+  }
+
+  function setAuthMode(mode){
+    const isLogin = mode === 'login';
+    document.getElementById('toggle-login').classList.toggle('active', isLogin);
+    document.getElementById('toggle-signup').classList.toggle('active', !isLogin);
+    document.getElementById('form-login').classList.toggle('active', isLogin);
+    document.getElementById('form-signup').classList.toggle('active', !isLogin);
+    document.getElementById('auth-heading').textContent = isLogin ? 'Welcome back' : 'Set up your farm';
+    document.getElementById('auth-subheading').textContent = isLogin
+      ? "Log in to see your farm's live readings and records."
+      : "Create your account and connect your physical AIPMS unit.";
+    document.getElementById('auth-footnote').innerHTML = isLogin
+      ? 'New here? <b onclick="setAuthMode(\'signup\')">Create an account</b>'
+      : 'Already have an account? <b onclick="setAuthMode(\'login\')">Log in</b>';
+  }
+
+  function setMessage(id, text, type='error'){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `form-message ${type} show`;
+  }
+
+  function submitLogin(){
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if(!email.includes('@') || !password){
+      setMessage('login-message','Enter a valid email address and password.');
+      return;
+    }
+    appState.user = appState.user || {name:'Farm owner',email,device:'AIPMS1234'};
+    appState.user.email = email;
+    localStorage.setItem('aipms-user',JSON.stringify(appState.user));
+    goToApp();
+  }
+
+  function submitSignup(){
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const device = document.getElementById('signup-device').value.trim().toUpperCase();
+    if(!name || !email.includes('@')) return setMessage('signup-message','Enter your name and a valid email address.');
+    if(password.length < 8) return setMessage('signup-message','Password must contain at least 8 characters.');
+    if(!/^AIPMS[A-Z0-9-]{3,}$/.test(device)) return setMessage('signup-message','Use the device ID printed on your unit, such as AIPMS1234.');
+    appState.user = {name,email,device};
+    localStorage.setItem('aipms-user',JSON.stringify(appState.user));
+    activateView('view-setup');
+    document.getElementById('tabbar').style.display='none';
+    setTimeout(()=>document.getElementById('setup-progress').style.width='100%',80);
+    setTimeout(()=>{
+      document.getElementById('setup-success').classList.add('show');
+      document.getElementById('setup-title').textContent='Your AIPMS unit is registered';
+      document.getElementById('setup-copy').textContent=`${device} is now linked to ${name}'s account.`;
+      document.getElementById('setup-continue').style.display='block';
+    },1250);
+  }
+
+  function forgotPassword(){
+    const email = document.getElementById('login-email').value.trim();
+    setMessage('login-message',email.includes('@') ? `Password reset instructions would be sent to ${email}.` : 'Enter your email first, then request a password reset.',email.includes('@')?'success':'error');
+  }
+
+  function goToApp(){
+    activateView('view-home');
+    document.getElementById('tabbar').style.display='flex';
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    applyUser();
+    startSensorDemo();
+  }
+
+  function applyUser(){
+    const user = appState.user || {name:'Farm owner',email:'farmer@example.com',device:'AIPMS1234'};
+    document.getElementById('settings-name').textContent=user.name;
+    document.getElementById('settings-email').textContent=user.email;
+    document.getElementById('settings-device').textContent=user.device;
+    document.querySelectorAll('.mode-pill').forEach(p=>{if(/^AIPMS/.test(p.textContent.trim())) p.textContent=user.device;});
+  }
+
+  function startSensorDemo(){
+    clearInterval(appState.sensorTimer);
+    appState.sensorTimer=setInterval(()=>{
+      const temp=(26.7+Math.random()*.8).toFixed(1);
+      const humidity=Math.round(76+Math.random()*4);
+      document.getElementById('temperature-reading').textContent=temp;
+      document.getElementById('humidity-reading').textContent=humidity;
+      document.getElementById('reading-update').textContent='Live readings · updated just now';
+    },4500);
+  }
+
+  function connectLocal(){
+    const address=document.getElementById('local-address').value.trim();
+    const stage=document.getElementById('camera-stage');
+    document.getElementById('camera-status').textContent='Searching…';
+    document.getElementById('camera-copy').innerHTML='<span class="cam-icon">⌁</span>Searching the farm network for '+(address||'your AIPMS unit')+'…';
+    setTimeout(()=>{
+      stage.classList.add('connected');
+      document.getElementById('camera-status').textContent='Local demo';
+      document.getElementById('camera-copy').innerHTML='<span class="cam-icon">▶</span>Local camera preview area<br><small>Real video appears here when the UNO Q stream is reachable.</small>';
+      document.getElementById('camera-overlay').style.display='flex';
+      document.getElementById('detection-copy').textContent='Chicken detected with 91% confidence · just now';
+      showToast('Local camera demo connected');
+    },1200);
+  }
+
+  function saveRecord(){
+    const record={
+      date:new Date().toISOString(),
+      chicks:Number(document.getElementById('record-chicks').textContent),
+      bred:Number(document.getElementById('record-bred').textContent),
+      eggs:Number(document.getElementById('record-eggs').textContent),
+      note:document.getElementById('record-note').value.trim()
+    };
+    appState.records.unshift(record);
+    localStorage.setItem('aipms-records',JSON.stringify(appState.records));
+    showToast("Today's farm record was saved");
+  }
+
+  function renderHistory(){
+    const list=document.getElementById('history-list');
+    if(!appState.records.length) return;
+    const saved=appState.records.map(r=>{
+      const d=new Date(r.date);
+      return `<div class="history-item"><div class="history-date"><div class="dow">${d.toLocaleDateString([], {weekday:'short'}).toUpperCase()}</div><div class="dnum">${d.getDate()}</div></div><div class="history-stats"><div><b>${r.chicks}</b>chicks</div><div><b>${r.bred}</b>bred</div><div><b>${r.eggs}</b>eggs</div></div><div class="history-note good">Saved</div></div>`;
+    }).join('');
+    if(!list.dataset.original) list.dataset.original=list.innerHTML;
+    list.innerHTML=saved+list.dataset.original;
+  }
+
+  function openHistory(){
+    activateView('view-history');
+    renderHistory();
+  }
+
+  function openRecords(){
+    activateView('view-records');
+  }
+
+  function toggleSwitch(button){
+    button.classList.toggle('off');
+    showToast(button.classList.contains('off')?'Notification disabled':'Notification enabled');
+  }
+
+  function showToast(text){
+    const toast=document.getElementById('toast');
+    toast.textContent=text;toast.classList.add('show');
+    clearTimeout(toast._timer);toast._timer=setTimeout(()=>toast.classList.remove('show'),2400);
+  }
+
+  function logout(){
+    clearInterval(appState.sensorTimer);
+    localStorage.removeItem('aipms-user');
+    appState.user=null;
+    document.getElementById('tabbar').style.display='none';
+    activateView('view-auth');
+    setAuthMode('login');
+    showToast('Logged out');
+  }
+
+  document.querySelectorAll('.stepper').forEach(st=>{
+    const [minus,num,plus]=st.children;
+    minus.addEventListener('click',()=>{num.textContent=Math.max(0,parseInt(num.textContent)-1);});
+    plus.addEventListener('click',()=>{num.textContent=parseInt(num.textContent)+1;});
+  });
+
+  document.querySelectorAll('.date-pill').forEach(el=>{
+    if(el.id!=='camera-status') el.textContent=new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'});
+  });
+  if(appState.user) goToApp();
+</script>
+</body>
+</html>
