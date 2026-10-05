@@ -2,7 +2,8 @@ import { imageHosts } from './image-hosts.config.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
+  turbopack: {},
   distDir: process.env.DIST_DIR || '.next',
   typescript: {
     ignoreBuildErrors: true,
@@ -15,6 +16,7 @@ const nextConfig = {
     minimumCacheTTL: 60,
     qualities: [75, 85, 100],
   },
+  ...(process.env.ENABLE_COMPONENT_TAGGER === 'true' || process.env.WATCH_IGNORED_PATHS ? {
   webpack(
     config,
     {
@@ -22,7 +24,8 @@ const nextConfig = {
     }
   ) {
     if (dev) {
-      config.module.rules.push({
+      // Optional visual-editor tagging adds work to every source transform.
+      if (process.env.ENABLE_COMPONENT_TAGGER === 'true') config.module.rules.push({
         test: /\.(jsx|tsx)$/,
         exclude: [/node_modules/],
         use: [{
@@ -41,5 +44,6 @@ const nextConfig = {
     }
     return config;
   },
+  } : {}),
 };
 export default nextConfig;

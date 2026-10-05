@@ -98,3 +98,12 @@ You can check out the [Next.js GitHub repository](https://github.com/vercel/next
 - Styled with Tailwind CSS
 
 Built with ❤️ on Rocket.new
+
+## Local development performance
+
+Use Node.js 22 (`nvm use` in this directory), then run `npm run dev`.
+Development uses Turbopack. `npm run dev:webpack` is available for compatibility.
+The UI uses system fonts, so compilation does not download Google Fonts.
+Optional Rocket component tagging is disabled; enable it for the Webpack
+preview with `ENABLE_COMPONENT_TAGGER=true npm run dev:webpack`.
+Stop and restart the server after changing the development configuration.

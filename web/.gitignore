@@ -37,3 +37,6 @@ jest-test-results.json
 turbo/
 
 .env
+# Local environment credentials
+.env.local
+.env.*.local

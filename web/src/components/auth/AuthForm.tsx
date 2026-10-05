@@ -3,7 +3,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import '@/styles/auth.css';
 import AppLogo from '@/components/ui/AppLogo';
 import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -88,36 +90,27 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
     setLoading(false);
   }
 
-  return <main className="min-h-screen bg-background text-foreground grid lg:grid-cols-[1.08fr_0.92fr]">
-    <section className="relative hidden lg:flex overflow-hidden bg-primary p-14 text-primary-foreground flex-col justify-between">
-      <div className="absolute inset-0 opacity-30 auth-grid" aria-hidden="true" />
-      <Link href="/" className="relative z-10 flex items-center gap-3 w-fit"><span className="grid place-items-center rounded-2xl bg-white p-2"><AppLogo size={52} /></span><span className="font-extrabold text-xl">Anatsor</span></Link>
-      <div className="relative z-10 max-w-xl">
-        <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em]"><span className="h-2 w-2 animate-pulse rounded-full bg-accent" /> AIPMS farm intelligence</span>
-        <h1 className="text-5xl font-extrabold leading-[1.02] tracking-[-0.04em]">Your poultry house,<br /><span className="font-light italic text-accent">always within reach.</span></h1>
-        <p className="mt-7 max-w-lg text-lg leading-relaxed text-white/65">Monitor temperature, humidity and ammonia remotely. Catch unsafe conditions early and protect every flock.</p>
-      </div>
-      <div className="relative z-10 grid grid-cols-3 gap-3">{['Live conditions', 'Instant alerts', 'Secure access'].map((item, i) => <div key={item} className="rounded-2xl border border-white/15 bg-white/[0.07] p-4"><span className="text-accent font-extrabold">0{i + 1}</span><p className="mt-2 text-sm font-semibold text-white/80">{item}</p></div>)}</div>
-    </section>
-    <section className="relative flex min-h-screen items-center justify-center px-5 py-16 sm:px-12">
-      <Link href="/" className="absolute left-6 top-6 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary"><ArrowLeft size={17} /> Back home</Link>
-      <div className="w-full max-w-md">
-        <div className="mb-9 lg:hidden"><AppLogo size={60} /></div>
-        <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.2em] text-secondary">{signup ? 'Start monitoring' : 'Welcome back'}</p>
-        <h2 className="text-4xl font-extrabold tracking-[-0.035em] text-primary">{signup ? 'Create your farm account' : 'Sign in to AIPMS'}</h2>
-        <p className="mt-3 text-muted-foreground">{signup ? 'Connect your first monitoring device in a few steps.' : 'View the latest conditions across your poultry farm.'}</p>
+  return <main className="auth-page">
+    <Image src="/assets/images/hero_background.png" alt="" fill priority sizes="100vw" className="auth-background" />
+    <div className="auth-overlay" aria-hidden="true" />
+    <header className="auth-brand"><Link href="/" aria-label="Anatsor home"><span><AppLogo size={42} /></span><strong>Anatsor</strong></Link></header>
+    <div className="auth-layout">
+      <section className="auth-caption" aria-label="Farm monitoring"><h1>Your farm.<br />Always within reach.</h1></section>
+      <section className="auth-card" aria-labelledby="auth-title">
+        <p className="auth-eyebrow">{signup ? 'Get started' : 'Welcome back'}</p>
+        <h2 id="auth-title">{signup ? 'Create your account' : 'Sign in to your farm'}</h2>
+        <p className="auth-description">{signup ? 'Register your AIPMS device to start monitoring.' : 'See what is happening in your poultry house.'}</p>
         <form onSubmit={submit} className="mt-9 space-y-5">
           {signup && <><Field label="Username" name="username" placeholder="e.g. ade.farms" required /><div className="grid gap-5 sm:grid-cols-2"><Field label="Device name" name="deviceName" placeholder="Brooder house" required /><Field label="Device ID" name="deviceId" placeholder="AIPMS1234" required /></div></>}
-          <Field label="Email address" name="email" type="email" placeholder="farmer@example.com" required />
-          <label className="block"><span className="mb-2 block text-sm font-bold text-primary">Password</span><span className="relative block"><input name="password" type={visible ? 'text' : 'password'} minLength={8} required placeholder="At least 8 characters" className="auth-input pr-12" /><button type="button" aria-label="Show password" onClick={() => setVisible(!visible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">{visible ? <EyeOff size={19} /> : <Eye size={19} />}</button></span></label>
+          <Field label="Email address" name="email" type="email" autoComplete="email" placeholder="farmer@example.com" required />
+          <label className="block"><span className="mb-2 block text-sm font-bold text-primary">Password</span><span className="relative block"><input name="password" type={visible ? 'text' : 'password'} autoComplete={signup ? 'new-password' : 'current-password'} minLength={signup ? 8 : undefined} required placeholder={signup ? 'At least 8 characters' : 'Enter your password'} className="auth-input pr-12" /><button type="button" aria-label={visible ? 'Hide password' : 'Show password'} aria-pressed={visible} onClick={() => setVisible(!visible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">{visible ? <EyeOff size={19} /> : <Eye size={19} />}</button></span></label>
           {message && <div role="status" className="rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm">{message}</div>}
           {!isSupabaseConfigured && <p className="text-xs text-muted-foreground">Supabase setup is required before authentication can complete.</p>}
           <button disabled={loading} className="group flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-extrabold uppercase tracking-widest text-primary-foreground shadow-lg transition hover:bg-secondary disabled:opacity-60">{loading ? 'Please wait…' : signup ? 'Create account' : 'Sign in'} <ArrowRight size={18} /></button>
         </form>
         <p className="mt-7 text-center text-sm text-muted-foreground">{signup ? 'Already have an account?' : 'New to Anatsor?'} <Link className="font-extrabold text-secondary hover:underline" href={signup ? '/login' : '/signup'}>{signup ? 'Sign in' : 'Create an account'}</Link></p>
-        <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground"><ShieldCheck size={16} /> Farm data protected by row-level security</div>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>;
 }
 
