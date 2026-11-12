@@ -3,6 +3,7 @@
 import React, { memo, useMemo } from 'react';
 import AppIcon from './AppIcon';
 import AppImage from './AppImage';
+import { withBasePath } from '@/lib/basePath';
 
 interface AppLogoProps {
   src?: string; // Image source (optional)
@@ -13,7 +14,7 @@ interface AppLogoProps {
 }
 
 const AppLogo = memo(function AppLogo({
-  src = '/assets/images/app_logo.png',
+  src = withBasePath('/assets/images/app_logo.png'),
   iconName = 'SparklesIcon',
   size = 64,
   className = '',

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
+import { withBasePath } from '@/lib/basePath';
 
 export default function HeroSection() {
   const mouseGlowRef = useRef<HTMLDivElement>(null);
@@ -68,7 +69,7 @@ export default function HeroSection() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <AppImage
-          src="/assets/images/hero_background.png"
+          src={withBasePath('/assets/images/hero_background.png')}
           alt="Hero background"
           fill
           priority

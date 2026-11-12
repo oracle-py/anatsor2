@@ -11,6 +11,18 @@ A modern Next.js 15 application built with TypeScript and Tailwind CSS.
 
 The Arduino MQTT message shape is documented in `../backend/MQTT_PAYLOAD.md`.
 
+## Multi-farm demo (Youth4Climate, 15 farms)
+
+1. Run `supabase/schema.sql`, then create the admin account in Supabase (Authentication → Users → Add user).
+2. Put that email into `supabase/seed_farms.sql` (replace `REPLACE_WITH_ADMIN_EMAIL`) and run it in the SQL editor.
+   It adds farm columns to `devices`, upserts the 15 farms for the admin, and backfills 7 days of readings.
+   Re-run it any time to refresh the history up to "now".
+3. Sign in as the admin: `/farms` shows all deployments, and each card opens `/dashboard?farm=<device id>`.
+
+Live values are simulated in the browser by `src/lib/simulation.ts` (a deterministic function of farm and time,
+updated every 5 seconds). The SQL seed uses the same formulas, so stored history and live values line up.
+Pages carry a "Demo data" badge.
+
 ## 🚀 Features
 
 - **Next.js 15** - Latest version with improved performance and features

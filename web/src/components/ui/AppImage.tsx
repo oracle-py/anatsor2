@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import Image from 'next/image';
+import { withBasePath } from '@/lib/basePath';
 
 interface AppImageProps {
     src: string;
@@ -35,7 +36,7 @@ const AppImage = memo(function AppImage({
     fill = false,
     sizes,
     onClick,
-    fallbackSrc = '/assets/images/no_image.png',
+    fallbackSrc = withBasePath('/assets/images/no_image.png'),
     loading = 'lazy',
     unoptimized = false,
     ...props

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
+import { withBasePath } from '@/lib/basePath';
 
 export default function FounderCTASection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -48,7 +49,7 @@ export default function FounderCTASection() {
               <div className="relative group max-w-sm mx-auto lg:mx-0">
                 <div className="aspect-[4/5] rounded-4xl overflow-hidden bg-muted border border-border shadow-xl">
                   <AppImage
-                    src="/assets/images/author.png"
+                    src={withBasePath('/assets/images/author.png')}
                     alt="Professional African woman in business attire smiling confidently, bright neutral background, warm natural light, approachable and expert"
                     fill
                     className="object-cover transition-all duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0"

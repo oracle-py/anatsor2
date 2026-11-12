@@ -61,3 +61,37 @@
 @media (max-width: 1023px) { .farm-sidebar,.header-breadcrumb { display: none; }.mobile-brand { display: flex; align-items: center; gap: 9px; }.mobile-signout { display: block; padding: 8px; }.farm-header { padding: 0 24px; height: 60px; }.farm-content { padding: 24px 24px 112px; }.farm-mobile-nav { position: fixed; bottom: max(12px,env(safe-area-inset-bottom)); left: 16px; right: 16px; display: flex; justify-content: space-around; gap: 3px; z-index: 30; background: var(--brand-dark); padding: 8px; border-radius: 16px; box-shadow: 0 10px 30px #22191626; }.farm-mobile-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 9px 7px; border-radius: 9px; color: var(--brand-cream); font-size: 9px; flex: 1; min-width: 0; } }
 @media (max-width: 767px) { .farm-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }.farm-main-grid,.farm-lower-grid { grid-template-columns: 1fr; gap: 16px; }.farm-page-heading { align-items: flex-start; flex-direction: column; gap: 14px; }.farm-panel { padding: 18px; }.farm-content { padding: 22px 16px 110px; }.farm-header { padding: 0 16px; }.header-actions { gap: 8px; }.farm-device-footer { flex-direction: column; }.farm-device-footer p { text-align: left; }.camera-view { min-height: 240px; }.metric-value { font-size: 28px; }.metric-top p { font-size: 11px; }.metric-top > span { width: 29px; height: 29px; }.farm-page-heading h1 { font-size: 25px; } }
 @media (prefers-reduced-motion: reduce) { .farm-dashboard * { scroll-behavior: auto; animation: none !important; transition: none !important; } }
+
+/* Multi-farm additions */
+.farm-navigation button,.farm-mobile-nav button { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; color: #f5e8dcc9; width: 100%; text-align: left; transition: background-color 160ms, color 160ms; }
+.farm-navigation button.active,.farm-mobile-nav button.active { background: var(--brand-gold); color: var(--brand-dark); font-weight: 600; }
+.farm-navigation button:not(.active):hover,.farm-mobile-nav button:not(.active):hover { background: #ffffff12; color: white; }
+.farm-dashboard button:focus-visible { outline: 3px solid var(--brand-gold); outline-offset: 4px; }
+.nav-count { margin-left: auto; font-size: 10px; opacity: .75; }
+.header-breadcrumb a:hover { color: var(--brand-primary); }
+.demo-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 10px; font-weight: 600; letter-spacing: .2px; white-space: nowrap; }
+.farm-heading-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.farm-select { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--surface); border-radius: 9px; padding: 0 10px; color: var(--brand-secondary); }
+.farm-select select { appearance: auto; border: 0; background: transparent; padding: 10px 2px; font-size: 12px; color: var(--text-primary); max-width: 240px; outline: none; }
+.farm-select:focus-within { outline: 3px solid var(--brand-gold); outline-offset: 2px; }
+.farm-summary-note { display: flex; gap: 10px; align-items: flex-start; margin: -10px 0 22px; font-size: 12px; color: var(--text-muted); max-width: 760px; }
+.farm-summary-note svg { flex-shrink: 0; margin-top: 2px; color: var(--brand-secondary); }
+.farm-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 16px; }
+.farm-card { display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--border); background: var(--surface); border-radius: 14px; padding: 18px; min-width: 0; transition: border-color 160ms, box-shadow 160ms; }
+.farm-card:hover { border-color: var(--brand-secondary); box-shadow: 0 6px 18px #2219160d; }
+.farm-card.attention { border-color: #fecaca; }
+.farm-card-loading { min-height: 170px; background: var(--background); }
+.farm-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.farm-card-top h2 { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.farm-card-top p { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.farm-card-readings { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.farm-card-readings p { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; background: var(--background); border-radius: 9px; padding: 10px; color: var(--brand-secondary); }
+.farm-card-readings p svg { align-self: center; }
+.farm-card-readings strong { font-size: 18px; font-weight: 600; letter-spacing: -.5px; }
+.farm-card-readings small { font-size: 10px; color: var(--text-muted); }
+.farm-card .alarm-note { margin-top: -6px; }
+.farm-card-footer { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--text-muted); margin-top: auto; }
+.farm-card-footer span { display: flex; align-items: center; gap: 5px; }
+.farm-card-link { margin-left: auto; color: var(--brand-primary); font-weight: 600; }
+@media (max-width: 1023px) { .farm-mobile-nav button { flex-direction: column; justify-content: center; gap: 4px; padding: 9px 7px; color: var(--brand-cream); font-size: 9px; flex: 1; min-width: 0; text-align: center; } }
+@media (max-width: 767px) { .farm-heading-actions { width: 100%; }.farm-select { flex: 1; min-width: 0; }.farm-select select { max-width: none; width: 100%; } }

@@ -7,6 +7,7 @@ import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import '@/styles/auth.css';
 import AppLogo from '@/components/ui/AppLogo';
+import { withBasePath } from '@/lib/basePath';
 import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
@@ -25,7 +26,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
     // administrator deletes a logged-in user.
     supabase.auth.getUser().then(async ({ data, error }) => {
       if (data.user && !error) {
-        router.replace('/dashboard');
+        router.replace('/farms');
         return;
       }
 
@@ -62,7 +63,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       }
 
       const { data, error } = await supabase.auth.signUp({ email, password, options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}${withBasePath('/farms')}`,
         data: { username: String(form.get('username') || '').trim(), device_id: deviceId, device_name: String(form.get('deviceName') || '').trim() },
       }});
       if (error) setMessage(error.message);
@@ -72,7 +73,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           requested_name: String(form.get('deviceName') || '').trim() || null,
         });
         if (claimError) setMessage(claimError.message);
-        else router.push('/dashboard');
+        else router.push('/farms');
       }
       else setMessage('Account created. Check your email to confirm your address, then sign in.');
     } else {
@@ -84,14 +85,14 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           const { data: existing } = await supabase.from('devices').select('id').limit(1).maybeSingle();
           if (!existing) await supabase.rpc('claim_device', { requested_device_id: metadata.device_id, requested_name: metadata.device_name || null });
         }
-        router.push('/dashboard');
+        router.push('/farms');
       }
     }
     setLoading(false);
   }
 
   return <main className="auth-page">
-    <Image src="/assets/images/hero_background.png" alt="" fill priority sizes="100vw" className="auth-background" />
+    <Image src={withBasePath('/assets/images/hero_background.png')} alt="" fill priority sizes="100vw" className="auth-background" />
     <div className="auth-overlay" aria-hidden="true" />
     <header className="auth-brand"><Link href="/" aria-label="Anatsor home"><span><AppLogo size={42} /></span><strong>Anatsor</strong></Link></header>
     <div className="auth-layout">

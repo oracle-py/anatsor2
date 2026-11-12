@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import '../styles/tailwind.css';
 import '../styles/brand.css';
+import { withBasePath } from '@/lib/basePath';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   description: 'Anatsor: Empowering poultry farmers with modern technologies',
   icons: {
     icon: [
-      { url: '/favicon.ico', type: 'image/x-icon' }
+      { url: withBasePath('/favicon.ico'), type: 'image/x-icon' }
     ],
   },
 };
