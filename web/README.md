@@ -11,17 +11,26 @@ A modern Next.js 15 application built with TypeScript and Tailwind CSS.
 
 The Arduino MQTT message shape is documented in `../backend/MQTT_PAYLOAD.md`.
 
-## Multi-farm demo (Youth4Climate, 15 farms)
+## Multi-farm workspace (Youth4Climate, 15 farms)
 
-1. Run `supabase/schema.sql`, then create the admin account in Supabase (Authentication → Users → Add user).
-2. Put that email into `supabase/seed_farms.sql` (replace `REPLACE_WITH_ADMIN_EMAIL`) and run it in the SQL editor.
-   It adds farm columns to `devices`, upserts the 15 farms for the admin, and backfills 7 days of readings.
-   Re-run it any time to refresh the history up to "now".
-3. Sign in as the admin: `/farms` shows all deployments, and each card opens `/dashboard?farm=<device id>`.
+After sign-in the app opens `/overview`. Sidebar sections:
 
-Live values are simulated in the browser by `src/lib/simulation.ts` (a deterministic function of farm and time,
-updated every 5 seconds). The SQL seed uses the same formulas, so stored history and live values line up.
-Pages carry a "Demo data" badge.
+- **Overview** – totals, map of all farms, farm comparison chart, sortable farms table
+- **Farms** – states → farms in a state → full farm page (`/farms/<state>/<device id>`)
+- **Reports** – per-farm summary for 24h / 7d / 30d, CSV download, print to PDF
+- **Analysis** – state trends, daily pattern, time-in-alarm ranking, highlights
+- **Settings** – account, data source, alert thresholds
+
+Farm records live in `src/lib/farms-data.ts` (map positions are approximate). Readings are
+simulated in the browser by `src/lib/simulation.ts`, a deterministic function of farm and time
+refreshed every 5 seconds, so no database rows are needed to see everything.
+`supabase/seed_farms.sql` can still load the same farms and history into Supabase for later.
+
+Local preview without signing in (development only, ignored by production builds):
+
+```bash
+NEXT_PUBLIC_DEV_PREVIEW=1 npm run dev   # then open http://localhost:3000/login/overview
+```
 
 ## 🚀 Features
 

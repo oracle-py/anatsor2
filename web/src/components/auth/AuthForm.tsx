@@ -26,7 +26,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
     // administrator deletes a logged-in user.
     supabase.auth.getUser().then(async ({ data, error }) => {
       if (data.user && !error) {
-        router.replace('/farms');
+        router.replace('/overview');
         return;
       }
 
@@ -63,7 +63,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       }
 
       const { data, error } = await supabase.auth.signUp({ email, password, options: {
-        emailRedirectTo: `${window.location.origin}${withBasePath('/farms')}`,
+        emailRedirectTo: `${window.location.origin}${withBasePath('/overview')}`,
         data: { username: String(form.get('username') || '').trim(), device_id: deviceId, device_name: String(form.get('deviceName') || '').trim() },
       }});
       if (error) setMessage(error.message);
@@ -73,7 +73,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           requested_name: String(form.get('deviceName') || '').trim() || null,
         });
         if (claimError) setMessage(claimError.message);
-        else router.push('/farms');
+        else router.push('/overview');
       }
       else setMessage('Account created. Check your email to confirm your address, then sign in.');
     } else {
@@ -85,7 +85,7 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           const { data: existing } = await supabase.from('devices').select('id').limit(1).maybeSingle();
           if (!existing) await supabase.rpc('claim_device', { requested_device_id: metadata.device_id, requested_name: metadata.device_name || null });
         }
-        router.push('/farms');
+        router.push('/overview');
       }
     }
     setLoading(false);

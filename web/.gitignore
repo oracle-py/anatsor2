@@ -40,3 +40,6 @@ turbo/
 # Local environment credentials
 .env.local
 .env.*.local
+
+# Local preview build (NEXT_PUBLIC_DEV_PREVIEW)
+.next-preview/

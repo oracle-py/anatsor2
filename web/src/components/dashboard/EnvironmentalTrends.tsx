@@ -9,13 +9,14 @@ const series = [
   { key: 'air_quality', name: 'Ammonia / air quality', unit: 'ppm', color: 'var(--brand-gold)', dash: '2 3' },
 ];
 
-export default function EnvironmentalTrends({ readings }: { readings: Sample[] }) {
+export default function EnvironmentalTrends({ readings, showDate = false }: { readings: Sample[]; showDate?: boolean }) {
+  const tick = (value: string) => showDate ? new Date(value).toLocaleDateString([], { weekday: 'short', day: 'numeric' }) : new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return <div className="trend-series">{series.map(series => <div key={series.key}>
     <p className="trend-label"><span style={{ background: series.color }} />{series.name} <small>{series.unit}</small></p>
     {readings.filter(row => row[series.key as keyof Sample] !== null).length < 2 ? <div className="trend-empty">Waiting for at least two readings.</div> : <div className="trend-chart"><ResponsiveContainer width="100%" height="100%">
       <LineChart data={readings} margin={{ top: 8, right: 12, left: -20, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
-        <XAxis dataKey="created_at" tickFormatter={value => new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} minTickGap={55} tick={{ fontSize: 10, fill: '#776C67' }} axisLine={false} tickLine={false} />
+        <XAxis dataKey="created_at" tickFormatter={tick} minTickGap={55} tick={{ fontSize: 10, fill: '#776C67' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 10, fill: '#776C67' }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
         <Tooltip labelFormatter={value => new Date(String(value)).toLocaleString()} formatter={value => [`${value} ${series.unit}`, series.name]} />
         <Line type="monotone" dataKey={series.key} name={series.name} stroke={series.color} strokeWidth={2.5} strokeDasharray={series.dash} dot={false} connectNulls={false} isAnimationActive={false} />

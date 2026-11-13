@@ -184,6 +184,15 @@ export function mergeDetections(farm: Farm, stored: Reading[], latestStoredAt: n
     .slice(0, limit);
 }
 
+/** Simulated samples every `stepMs` over (to - windowMs, to], skipping time before installation, ending at `to`. */
+export function sampleHistory(farm: Farm, to: number, windowMs: number, stepMs: number): Reading[] {
+  const from = Math.max(to - windowMs, installedAt(farm));
+  const rows: Reading[] = [];
+  for (let t = Math.ceil(from / stepMs) * stepMs; t < to; t += stepMs) rows.push(simulateReading(farm, t));
+  rows.push(simulateReading(farm, to));
+  return rows;
+}
+
 export function activeAlarms(reading: Reading | null) {
   if (!reading) return [];
   return [
