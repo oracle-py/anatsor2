@@ -8,6 +8,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import { FarmDataProvider } from '@/components/app/FarmDataProvider';
 import { getSupabaseClient } from '@/lib/supabase';
 import { farmById, stateBySlug } from '@/lib/farms-data';
+import { STATIC_DISPLAY_NAME } from '@/lib/profile';
 import '@/styles/dashboard.css';
 
 const navigation = [
@@ -84,6 +85,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 /** Prefer the full name, then the username chosen at signup, then the email prefix. */
 function displayName(metadata: Record<string, unknown> | undefined, email?: string) {
+  if (STATIC_DISPLAY_NAME) return STATIC_DISPLAY_NAME;
   const pick = (key: string) => typeof metadata?.[key] === 'string' ? (metadata[key] as string).trim() : '';
   return pick('full_name') || pick('username') || email?.split('@')[0] || 'Admin';
 }

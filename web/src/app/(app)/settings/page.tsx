@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { Check, Database, Gauge, UserRound } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase';
+import { STATIC_DISPLAY_NAME } from '@/lib/profile';
 import { useFarmData } from '@/components/app/FarmDataProvider';
 import { PageHeading, Panel } from '@/components/dashboard/ui';
 import { LIVE_TICK_MS, THRESHOLDS } from '@/lib/simulation';
@@ -46,14 +47,14 @@ export default function SettingsPage() {
 
     <div className="settings-grid">
       <Panel title="Account" subtitle="Signed-in administrator" icon={<UserRound size={19} />}>
-        <form className="name-form" onSubmit={saveName}>
+        {STATIC_DISPLAY_NAME ? <dl className="record-list"><div><dt>Name</dt><dd>{user.name}</dd></div></dl> : <form className="name-form" onSubmit={saveName}>
           <label htmlFor="display-name">Display name</label>
           <div>
             <input id="display-name" value={name} onChange={event => { setName(event.target.value); setStatus({ kind: 'idle' }); }} maxLength={80} autoComplete="name" />
             <button type="submit" className="farm-button" disabled={status.kind === 'saving' || name.trim() === user.name}>{status.kind === 'saving' ? 'Saving…' : 'Save'}</button>
           </div>
           <p role="status" className={status.kind === 'error' ? 'danger-text' : 'healthy-text'}>{status.kind === 'saved' ? <><Check size={12} /> Saved. Shown in the greeting and profile.</> : status.message || ''}</p>
-        </form>
+        </form>}
         <dl className="record-list">
           <div><dt>Email</dt><dd>{user.email || '—'}</dd></div>
           <div><dt>Role</dt><dd>Project administrator</dd></div>
