@@ -21,14 +21,14 @@ const navigation = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     // Local preview without signing in: `NEXT_PUBLIC_DEV_PREVIEW=1 npm run dev`.
     // NODE_ENV is 'production' in every build, so this never applies when deployed.
     if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_PREVIEW === '1') {
-      setUser({ name: 'Preview', email: 'preview@localhost' });
+      setUser({ id: 'preview', name: 'Preview', email: 'preview@localhost' });
       return;
     }
     const supabase = getSupabaseClient();
@@ -39,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.replace('/');
         return;
       }
-      setUser({ name: data.user.user_metadata?.username || data.user.email?.split('@')[0] || 'Admin', email: data.user.email || '' });
+      setUser({ id: data.user.id, name: displayName(data.user.user_metadata, data.user.email), email: data.user.email || '' });
     });
   }, [router]);
 
@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const crumbs = useMemo(() => breadcrumbs(pathname), [pathname]);
-  const initials = (user?.name || '··').slice(0, 2).toUpperCase();
+  const initials = user ? initialsOf(user.name) : '··';
   const nav = (mobile = false) => <nav aria-label={mobile ? 'Mobile navigation' : 'Main navigation'} className={mobile ? 'farm-mobile-nav' : 'farm-navigation'}>
     {navigation.map(({ href, label, icon: Icon }) => {
       const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -76,10 +76,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
       <main id="main" className="farm-content">
         {error && <div role="alert" className="farm-notice error"><TriangleAlert size={18} /><p>{error}</p></div>}
-        {user ? <FarmDataProvider user={user}>{children}</FarmDataProvider> : !error && <div className="farm-empty" aria-busy="true">Loading workspace…</div>}
+        {user ? <FarmDataProvider user={user} onRename={name => setUser(current => current && { ...current, name })}>{children}</FarmDataProvider> : !error && <div className="farm-empty" aria-busy="true">Loading workspace…</div>}
       </main>
     </div>{nav(true)}
   </div>;
+}
+
+/** Prefer the full name, then the username chosen at signup, then the email prefix. */
+function displayName(metadata: Record<string, unknown> | undefined, email?: string) {
+  const pick = (key: string) => typeof metadata?.[key] === 'string' ? (metadata[key] as string).trim() : '';
+  return pick('full_name') || pick('username') || email?.split('@')[0] || 'Admin';
+}
+
+function initialsOf(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  return (words.length > 1 ? words[0][0] + words[words.length - 1][0] : name.slice(0, 2)).toUpperCase();
 }
 
 function breadcrumbs(pathname: string) {

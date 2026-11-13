@@ -10,12 +10,14 @@ type FarmData = {
   now: number | null;
   /** Live reading per farm id. Empty before hydration. */
   live: Record<string, Reading>;
-  user: { name: string; email: string };
+  user: { id: string; name: string; email: string };
+  /** Update the displayed name after it is saved. */
+  onRename: (name: string) => void;
 };
 
 const FarmDataContext = createContext<FarmData | null>(null);
 
-export function FarmDataProvider({ user, children }: { user: FarmData['user']; children: React.ReactNode }) {
+export function FarmDataProvider({ user, onRename, children }: { user: FarmData['user']; onRename: FarmData['onRename']; children: React.ReactNode }) {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -27,8 +29,8 @@ export function FarmDataProvider({ user, children }: { user: FarmData['user']; c
   const value = useMemo<FarmData>(() => {
     const live: Record<string, Reading> = {};
     if (now) for (const farm of FARMS) live[farm.id] = simulateReading(farm, now);
-    return { farms: FARMS, now, live, user };
-  }, [now, user]);
+    return { farms: FARMS, now, live, user, onRename };
+  }, [now, user, onRename]);
 
   return <FarmDataContext.Provider value={value}>{children}</FarmDataContext.Provider>;
 }
